@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Research Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Web Research Assistant</h1>
+        <form method="POST">
+            <input type="text" name="query" placeholder="Enter your query..." required>
+            <button type="submit">Search</button>
+        </form>
+        {% if result %}
+            <div class="result-box">
+                <h2>Summary</h2>
+                <p>{{ result }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
