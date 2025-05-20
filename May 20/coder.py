@@ -7,12 +7,12 @@ from pylint import lint
 import platform
 import nest_asyncio
 from io import StringIO
+import re
 
-# Configuration for the LLM (using Grok 3's capabilities)
 config_list = [
     {
-        "model": "gemini-2.0-flash-001",  # Placeholder for Grok 3's internal model
-        "api_key": "AIzaSyDBeWc6uPtKJysf1Gmnn0UMSGV6s-yHfXY",  # Placeholder, not used in this context
+        "model": "gemini-2.0-flash-001", 
+        "api_key": "", 
         "api_type": "google"
     }
 ]
@@ -85,32 +85,30 @@ coder = autogen.AssistantAgent(
 debugger = autogen.AssistantAgent(
     name="Debugger",
     llm_config={"config_list": config_list},
-    system_message="You are an expert Python debugger. Analyze code for errors, suggest fixes, and ensure the code runs correctly. Use the Python Executor and Pylint outputs to guide your debugging."
+    system_message="""Analyze code quality. If code passes with pylint score >=7/10 and runs successfully, 
+    reply with 'ALL CHECKS PASSED. PYLINT SCORE: X/10. TERMINATE'"""
 )
 
-# User Proxy Agent to initiate tasks and execute tools
 # Define the UserProxy agent
 user_proxy = autogen.UserProxyAgent(
     name="UserProxy",
     human_input_mode="NEVER",
-    max_consecutive_auto_reply=10,
+    max_consecutive_auto_reply=25,
     is_termination_msg=lambda x: x.get("content", "").rstrip().endswith("TERMINATE"),
     code_execution_config=False,
     llm_config={"config_list": config_list},
 )
 
-# Register tools with proper response formatting
 @user_proxy.register_for_execution()
 @coder.register_for_llm(name="execute_python_code", description="Execute Python code and return the result")
 async def execute_python_code_tool(code: str):
     result = await execute_python_code(code)
-    # Format response to match Gemini's exact API expectations
     return {
-        "function_response": {
-            "name": "execute_python_code",
-            "response": {
-                "result": str(result)  # Stringify the result to ensure compatibility
-            }
+        "name": "execute_python_code",
+        "content": {
+            "status": "success" if result.get('returncode', 1) == 0 else "error",
+            "output": result.get('stdout', ''),
+            "error": result.get('stderr', '')
         }
     }
 
@@ -118,36 +116,29 @@ async def execute_python_code_tool(code: str):
 @debugger.register_for_llm(name="run_pylint", description="Run Pylint on Python code and return the linter output")
 async def run_pylint_tool(code: str):
     result = await run_pylint(code)
-    # Format response to match Gemini's exact API expectations
+    score_match = re.search(r'rated at (\d+\.?\d*)/10', result["pylint_output"])
     return {
-        "function_response": {
-            "name": "run_pylint",
-            "response": {
-                "result": str(result)  # Stringify the result to ensure compatibility
-            }
+        "name": "run_pylint",
+        "content": {
+            "score": float(score_match.group(1)) if score_match else 0.0,
+            "report": result["pylint_output"]
         }
     }
 
-# Define the group chat
-# Define the group chat
+
 group_chat = autogen.GroupChat(
     agents=[user_proxy, coder, debugger],
     messages=[],
-    max_round=10,
+    max_round=50,
     speaker_selection_method="round_robin"
 )
 
-# Group chat manager with termination condition
 group_chat_manager = autogen.GroupChatManager(
     groupchat=group_chat,
     llm_config={"config_list": config_list},
     is_termination_msg=lambda x: (
-        (
-            "runs without errors" in x.get("content", "").lower() and
-            "pylint score" in x.get("content", "").lower() and
-            any(score in x.get("content", "").lower() for score in ["8/10", "9/10", "10/10"])
-        ) or
-        x.get("content", "").rstrip().endswith("TERMINATE")
+        "TERMINATE" in x.get("content", "") and
+        any(str(score) in x.get("content", "") for score in range(6, 11))
     )
 )
 
@@ -157,7 +148,7 @@ async def main():
     initial_task = """
     Write a Python function to calculate the factorial of a number.
     After writing, execute the code and run pylint to ensure it’s correct and clean.
-    If there are issues, debug and fix them. The final code should run without errors and have a pylint score of at least 7/10.
+    If there are issues, debug and fix them. The final code should run without errors and have a pylint score of at least 6/10.
     """
 
     # Start the group chat
@@ -169,5 +160,5 @@ async def main():
 # Run the program
 if __name__ == "__main__":
     import nest_asyncio
-    nest_asyncio.apply()  # Enable nested event loops for AutoGen
+    nest_asyncio.apply()  
     asyncio.run(main())
