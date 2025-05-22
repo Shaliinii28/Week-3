@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Q&A System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        textarea, input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        #chatBox {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e6f7ff;
+            border-left: 4px solid #1890ff;
+        }
+        .bot-message {
+            background-color: #f6ffed;
+            border-left: 4px solid #52c41a;
+        }
+        .error-message {
+            background-color: #fff2f0;
+            border-left: 4px solid #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Q&A System</h1>
+    
+    <div class="section">
+        <h2>Add Document</h2>
+        <form id="addForm">
+            <label for="documentText">Paste your document text:</label>
+            <textarea id="documentText" rows="10" required placeholder="Paste your long document text here..."></textarea>
+            <button type="submit">Process Document</button>
+        </form>
+    </div>
+    
+    <div class="section">
+        <h2>Ask Questions</h2>
+        <div id="chatBox"></div>
+        <form id="askForm">
+            <input type="text" id="userQuestion" placeholder="Type your question about the document..." required>
+            <button type="submit">Ask Question</button>
+        </form>
+    </div>
+
+    <script>
+        // Add document
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const text = document.getElementById('documentText').value;
+            const chatBox = document.getElementById('chatBox');
+            
+            chatBox.innerHTML += `
+                <div class="message">
+                    <strong>System:</strong> Processing document...
+                </div>
+            `;
+            
+            const response = await fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'text': text
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                chatBox.innerHTML += `
+                    <div class="message">
+                        <strong>System:</strong> Document processed successfully! You can now ask questions.
+                    </div>
+                `;
+                document.getElementById('documentText').value = '';
+            } else {
+                chatBox.innerHTML += `
+                    <div class="error-message">
+                        <strong>Error:</strong> ${result.error || 'Failed to process document'}
+                    </div>
+                `;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+        
+        // Ask question
+        document.getElementById('askForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const question = document.getElementById('userQuestion').value;
+            const chatBox = document.getElementById('chatBox');
+            
+            // Add user question to chat
+            chatBox.innerHTML += `
+                <div class="user-message">
+                    <strong>You:</strong> ${question}
+                </div>
+            `;
+            document.getElementById('userQuestion').value = '';
+            
+            // Get answer from server
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'question': question
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Add bot response to chat
+                chatBox.innerHTML += `
+                    <div class="bot-message">
+                        <strong>Bot:</strong> ${result.answer}
+                    </div>
+                `;
+            } catch (error) {
+                chatBox.innerHTML += `
+                    <div class="error-message">
+                        <strong>Error:</strong> Failed to get response from server
+                    </div>
+                `;
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+        
+        // Allow pressing Enter in question field
+        document.getElementById('userQuestion').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('askForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
