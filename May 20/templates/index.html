@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Code Generator</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        #codeForm {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        #query {
+            width: 90%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        #query:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            align-self: flex-end;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(67, 97, 238, 0.2);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #results {
+            margin-top: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .code-container {
+            position: relative;
+        }
+        
+        pre {
+            margin: 0;
+            padding: 20px;
+            background-color: #282c34;
+            color: #abb2bf;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .output {
+            padding: 20px;
+            background-color: white;
+            border-left: 4px solid var(--primary-color);
+            margin-top: 10px;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .error {
+            padding: 15px;
+            background-color: #ffebee;
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(40, 44, 52, 0.8);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .conversation {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .message-name {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .message-content {
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Python Code Generator</h1>
+        <p class="description">Describe what Python code you want to generate and our AI will create it for you</p>
+        
+        <form id="codeForm">
+            <textarea id="query" placeholder="Example: 'Write a Python function to calculate factorial of a number'"></textarea>
+            <button type="submit">Generate Code</button>
+            <div id="loading">
+                <div class="spinner"></div>
+                Generating your Python code...
+            </div>
+        </form>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        document.getElementById('codeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+            const query = document.getElementById('query').value.trim();
+            
+            if (!query) {
+                resultsDiv.innerHTML = `<div class="error">Please enter a description of the code you want to generate</div>`;
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    resultsDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+
+                let outputHtml = '';
+                
+                // Format code output
+                if (data.output) {
+                    outputHtml += `
+                        <div class="code-container">
+                            <pre>${data.output}</pre>
+                            <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${data.output}\`)">Copy</button>
+                        </div>
+                    `;
+                } else {
+                    outputHtml += `<div class="output">No code was generated. Please try a different query.</div>`;
+                }
+
+                // Add conversation history if available
+                if (data.conversation && data.conversation.length > 0) {
+                    outputHtml += `<div class="conversation"><h3>Debug Process:</h3>`;
+                    data.conversation.forEach(msg => {
+                        if (msg.content && msg.content.trim()) {
+                            outputHtml += `
+                                <div class="message">
+                                    <div class="message-name">${msg.name}:</div>
+                                    <div class="message-content">${msg.content}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    outputHtml += `</div>`;
+                }
+                
+                resultsDiv.innerHTML = outputHtml;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

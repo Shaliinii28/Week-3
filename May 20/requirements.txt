@@ -1,0 +1,8 @@
+flask[async]==3.0.2
+google-generativeai==0.3.2
+autogen
+pylint==3.1.0
+python-dotenv==1.0.1
+nest-asyncio==1.6.0
+asyncio==3.4.3
+python-multipart==0.0.6
