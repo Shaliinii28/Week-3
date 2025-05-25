@@ -1,0 +1,25 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AI Research Assistant</h1>
+        <p>Get instant summaries of the latest advancements</p>
+    </div>
+
+    <div class="search-container">
+        <form method="POST" class="search-form">
+            <input type="text" name="query" 
+                   placeholder="Enter your research question (e.g., 'Latest AI advancements in healthcare')" 
+                   required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</body>
+</html>

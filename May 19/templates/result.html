@@ -1,0 +1,22 @@
+<!-- templates/results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Results</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AI Research Assistant</h1>
+        <p>Your research results</p>
+    </div>
+
+    <div class="results-card">
+        <h2 class="results-header">Research Results for: "{{ query }}"</h2>
+        <div class="summary-content">{{ summary }}</div>
+        <a href="/" class="new-search">New Search</a>
+    </div>
+</body>
+</html>

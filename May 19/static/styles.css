@@ -1,0 +1,139 @@
+/* static/styles.css */
+:root {
+    --primary-color: #2563eb;
+    --background-color: #f8fafc;
+    --text-color: #1e293b;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-container {
+	background: white;
+	padding: 2rem;
+	border-radius: 1rem;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	margin-bottom: 2rem;
+}
+
+.search-form {
+	display: flex;
+	gap: 1rem;
+}
+
+input[type="text"] {
+	flex: 1;
+	padding: 0.8rem 1rem;
+	border: 2px solid #e2e8f0;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+	outline: none;
+	border-color: var(--primary-color);
+}
+
+button {
+	background: var(--primary-color);
+	color: white;
+	padding: 0.8rem 1.5rem;
+	border: none;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: opacity 0.2s;
+}
+
+button:hover {
+	opacity: 0.9;
+}
+
+.results-card {
+	background: white;
+	padding: 2rem;
+	border-radius: 1rem;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	margin-top: 1.5rem;
+}
+
+.results-header {
+	color: var(--primary-color);
+	margin-bottom: 1.5rem;
+}
+
+.summary-content {
+	white-space: pre-wrap;
+	line-height: 1.8;
+}
+
+.summary-content h3 {
+	color: var(--primary-color);
+	margin-top: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.summary-content ul {
+	list-style: none;
+	padding-left: 1.5rem;
+}
+
+.summary-content li {
+	position: relative;
+	margin-bottom: 0.5rem;
+}
+
+.summary-content li::before {
+	content: "•";
+	color: var(--primary-color);
+	position: absolute;
+	left: -1.2rem;
+}
+
+.new-search {
+	display: inline-block;
+	margin-top: 2rem;
+	color: var(--primary-color);
+	text-decoration: none;
+	font-weight: 500;
+	transition: opacity 0.2s;
+}
+
+.new-search:hover {
+	opacity: 0.8;
+	text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+	body {
+		padding: 1rem;
+	}
+	
+	.header h1 {
+		font-size: 2rem;
+	}
+	
+	.search-form {
+		flex-direction: column;
+	}
+}
