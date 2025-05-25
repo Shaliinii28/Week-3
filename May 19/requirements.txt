@@ -1,8 +1,0 @@
-Flask
-langchain
-langchain-core
-langchain-google-genai
-bs4
-selenium
-webdriver-manager
-nest_asyncio
